@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="th">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>ระบบคำนวณราคาสายไฮดรอลิค ร้านพระพรหมไฮดรอลิค</title>
+        <link rel="stylesheet" href="css/styles.css" />
+    </head>
+    <body>
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1>ระบบคำนวณราคาสายไฮดรอลิค ร้านพระพรหมไฮดรอลิค</h1>
+                <div class="header-actions">
+                    <a
+                        href="login.html"
+                        class="btn btn-outline"
+                        style="border-color: white; color: black"
+                    >
+                        🔐 Admin Login
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <div class="container">
+            <!-- Loading Indicator -->
+            <div
+                id="loadingIndicator"
+                class="card text-center"
+                style="padding: 3rem"
+            >
+                <div
+                    class="loading"
+                    style="width: 40px; height: 40px; margin: 0 auto 1rem"
+                ></div>
+                <p style="color: var(--text-light)">กำลังโหลดข้อมูลสินค้า...</p>
+            </div>
+
+            <!-- Main Content (Initially Hidden) -->
+            <div id="mainContent" class="hidden">
+                <!-- เลือกสินค้า -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">เลือกสินค้า</h2>
+                        <button
+                            class="btn btn-secondary btn-sm"
+                            onclick="clearAll()"
+                        >
+                            🗑️ ล้างทั้งหมด
+                        </button>
+                    </div>
+
+                    <div class="grid grid-2">
+                        <!-- เลือกสายไฮดรอลิค -->
+                        <div>
+                            <h3
+                                style="
+                                    margin-bottom: 1rem;
+                                    color: var(--primary);
+                                "
+                            >
+                                สายไฮดรอลิค
+                            </h3>
+
+                            <div class="form-group">
+                                <label class="form-label">ชนิดสาย</label>
+                                <select
+                                    id="hoseType"
+                                    class="form-select"
+                                    onchange="updateHoseSizes()"
+                                >
+                                    <option value="">-- เลือกชนิดสาย --</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">ขนาด</label>
+                                <select
+                                    id="hoseSize"
+                                    class="form-select"
+                                    onchange="updateHosePrice()"
+                                >
+                                    <option value="">-- เลือกขนาด --</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">ความยาว (เมตร)</label>
+                                <input
+                                    type="number"
+                                    id="hoseLength"
+                                    class="form-input"
+                                    min="0"
+                                    step="0.1"
+                                    placeholder="0.0"
+                                    onchange="updateHosePrice()"
+                                />
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">ราคาต่อเมตร</label>
+                                <input
+                                    type="text"
+                                    id="hosePricePerUnit"
+                                    class="form-input"
+                                    disabled
+                                    value="0.00 บาท"
+                                    style="background: var(--bg-light)"
+                                />
+                            </div>
+
+                            <button
+                                class="btn btn-primary"
+                                style="width: 100%"
+                                onclick="addHoseToCart()"
+                            >
+                                ➕ เพิ่มสายลงตะกร้า
+                            </button>
+                        </div>
+
+                        <!-- เลือกหัวสาย -->
+                        <div>
+                            <h3
+                                style="
+                                    margin-bottom: 1rem;
+                                    color: var(--success);
+                                "
+                            >
+                                หัวสายไฮดรอลิค
+                            </h3>
+
+                            <div class="form-group">
+                                <label class="form-label">ชนิดหัว</label>
+                                <select
+                                    id="fittingType"
+                                    class="form-select"
+                                    onchange="updateFittingSizes()"
+                                >
+                                    <option value="">-- เลือกชนิดหัว --</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">ขนาด</label>
+                                <select
+                                    id="fittingSize"
+                                    class="form-select"
+                                    onchange="updateFittingPrice()"
+                                >
+                                    <option value="">-- เลือกขนาด --</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">จำนวน (ชิ้น)</label>
+                                <input
+                                    type="number"
+                                    id="fittingQuantity"
+                                    class="form-input"
+                                    min="0"
+                                    step="1"
+                                    placeholder="0"
+                                    onchange="updateFittingPrice()"
+                                />
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">ราคาต่อชิ้น</label>
+                                <input
+                                    type="text"
+                                    id="fittingPricePerUnit"
+                                    class="form-input"
+                                    disabled
+                                    value="0.00 บาท"
+                                    style="background: var(--bg-light)"
+                                />
+                            </div>
+
+                            <button
+                                class="btn btn-success"
+                                style="width: 100%"
+                                onclick="addFittingToCart()"
+                            >
+                                ➕ เพิ่มหัวลงตะกร้า
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ตะกร้าสินค้า -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">🛒 ตะกร้าสินค้า</h2>
+                        <span
+                            id="cartCount"
+                            class="badge badge-primary"
+                            style="
+                                font-size: 1rem;
+                                padding: 0.5rem 1rem;
+                                background: var(--primary);
+                            "
+                        >
+                            0 รายการ
+                        </span>
+                    </div>
+
+                    <div id="cartItems">
+                        <div
+                            class="text-center"
+                            style="padding: 3rem; color: var(--text-light)"
+                        >
+                            <p style="font-size: 1.125rem">
+                                ยังไม่มีสินค้าในตะกร้า
+                            </p>
+                            <p style="font-size: 0.875rem; margin-top: 0.5rem">
+                                เลือกสินค้าด้านบนเพื่อเริ่มต้น
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- สรุปยอด -->
+                    <div id="cartSummary" class="hidden">
+                        <div class="summary-box">
+                            <div class="summary-row">
+                                <span>ยอดรวม:</span>
+                                <span id="totalPrice">0.00 บาท</span>
+                            </div>
+                            <div class="summary-row">
+                                <span>ส่วนลด:</span>
+                                <span id="discount">0.00 บาท</span>
+                            </div>
+                            <div class="summary-row">
+                                <span>ยอดสุทธิ:</span>
+                                <span id="netPrice">0.00 บาท</span>
+                            </div>
+                        </div>
+
+                        <div
+                            style="display: flex; gap: 1rem; margin-top: 1.5rem"
+                        >
+                            <button
+                                class="btn btn-primary btn-lg"
+                                style="flex: 1"
+                                onclick="printReceipt()"
+                            >
+                                🖨️ พิมพ์ใบเสร็จ
+                            </button>
+                            <button
+                                class="btn btn-secondary btn-lg"
+                                style="flex: 1"
+                                onclick="saveOrder()"
+                            >
+                                💾 บันทึกรายการ
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Receipt Template (ซ่อนไว้ สำหรับพิมพ์) -->
+        <div id="receiptTemplate" class="hidden" style="padding: 2rem">
+            <div style="text-align: center; margin-bottom: 2rem">
+                <h1 style="font-size: 1.5rem">ใบเสร็จรับเงิน</h1>
+                <p>ร้านสายไฮดรอลิค</p>
+                <p style="font-size: 0.875rem; color: #666">
+                    เลขที่: <span id="receiptNumber">-</span><br />
+                    วันที่: <span id="receiptDate">-</span>
+                </p>
+            </div>
+
+            <table
+                style="
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin-bottom: 2rem;
+                "
+            >
+                <thead>
+                    <tr style="border-bottom: 2px solid #000">
+                        <th style="text-align: left; padding: 0.5rem">
+                            รายการ
+                        </th>
+                        <th style="text-align: center; padding: 0.5rem">
+                            จำนวน
+                        </th>
+                        <th style="text-align: right; padding: 0.5rem">ราคา</th>
+                    </tr>
+                </thead>
+                <tbody id="receiptItems"></tbody>
+            </table>
+
+            <div style="text-align: right; font-size: 1.125rem">
+                <div style="margin-bottom: 0.5rem">
+                    <strong>ยอดรวม:</strong>
+                    <span id="receiptTotal">0.00</span> บาท
+                </div>
+                <div style="font-size: 1.5rem; font-weight: bold">
+                    <strong>ยอดสุทธิ:</strong>
+                    <span id="receiptNet">0.00</span> บาท
+                </div>
+            </div>
+
+            <div
+                style="
+                    text-align: center;
+                    margin-top: 3rem;
+                    padding-top: 1rem;
+                    border-top: 1px solid #ccc;
+                "
+            >
+                <p style="font-size: 0.875rem">ขอบคุณที่ใช้บริการ</p>
+            </div>
+        </div>
+
+        <!-- ========================================
+         SCRIPTS - ต้องเรียงตามลำดับนี้เท่านั้น!
+    ======================================== -->
+
+        <!-- 1. Firebase SDK Compat (v9) -->
+        <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+        <!-- 2. Firebase Config (ต้องโหลดหลัง SDK) -->
+        <script src="js/firebase.js"></script>
+
+        <!-- 3. Calculator (หลัง firebase.js) -->
+        <script src="js/calculator.js"></script>
+
+        <!-- 4. Receipt -->
+        <script src="js/receipt.js"></script>
+    </body>
+</html>

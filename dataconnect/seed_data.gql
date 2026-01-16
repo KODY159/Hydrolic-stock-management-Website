@@ -1,0 +1,76 @@
+mutation CreateSeedData @transaction @auth(level: PUBLIC, insecureReason: "This operation is only used to populate the database with seed data") {
+  user_insertMany(data: [
+    {
+      id: "550e8400-e29b-41d4-a716-446655440000",
+      username: "demouser1",
+      email: "demouser1@example.com",
+      role: "admin"
+    },
+    {
+      id: "550e8400-e29b-41d4-a716-446655440001",
+      username: "demouser2",
+      email: "demouser2@example.com",
+      role: "member"
+    }
+  ])
+  component_insertMany(data: [
+    {
+      id: "650e8400-e29b-41d4-a716-446655440002",
+      name: "Example Component 1",
+      partNumber: "EC123",
+      quantity: 10,
+      unitOfMeasure: "EA"
+    },
+    {
+      id: "750e8400-e29b-41d4-a716-446655440003",
+      name: "Example Component 2",
+      partNumber: "EC456",
+      quantity: 5,
+      unitOfMeasure: "EA"
+    }
+  ])
+  order_insertMany(data: [
+    {
+      id: "850e8400-e29b-41d4-a716-446655440004",
+      createdById: "550e8400-e29b-41d4-a716-446655440000",
+      orderDate: "2024-01-01T00:00:00Z",
+      status: "pending",
+      totalCost: 100.0
+    },
+    {
+      id: "950e8400-e29b-41d4-a716-446655440005",
+      createdById: "550e8400-e29b-41d4-a716-446655440001",
+      orderDate: "2024-02-01T00:00:00Z",
+      status: "complete",
+      totalCost: 50.0
+    }
+  ])
+  orderLineItem_insertMany(data: [
+    {
+      orderId: "850e8400-e29b-41d4-a716-446655440004",
+      componentId: "650e8400-e29b-41d4-a716-446655440002",
+      quantityOrdered: 2,
+      unitPrice: 50.0
+    },
+    {
+      orderId: "950e8400-e29b-41d4-a716-446655440005",
+      componentId: "750e8400-e29b-41d4-a716-446655440003",
+      quantityOrdered: 1,
+      unitPrice: 50.0
+    }
+  ])
+  equipment_insertMany(data: [
+    {
+      id: "a50e8400-e29b-41d4-a716-446655440006",
+      name: "Example Equipment 1",
+      location: "Building A",
+      serialNumber: "EQ123"
+    },
+    {
+      id: "b50e8400-e29b-41d4-a716-446655440007",
+      name: "Example Equipment 2",
+      location: "Building B",
+      serialNumber: "EQ456"
+    }
+  ])
+}

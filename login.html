@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="th">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Admin Login - สายไฮดรอลิค</title>
+        <link rel="stylesheet" href="css/styles.css" />
+        <style>
+            .login-container {
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                padding: 1rem;
+            }
+
+            .login-card {
+                background: white;
+                border-radius: 16px;
+                padding: 3rem;
+                max-width: 450px;
+                width: 100%;
+                box-shadow:
+                    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+                    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            }
+
+            .login-header {
+                text-align: center;
+                margin-bottom: 2rem;
+            }
+
+            .login-icon {
+                width: 80px;
+                height: 80px;
+                background: linear-gradient(
+                    135deg,
+                    var(--primary) 0%,
+                    var(--primary-dark) 100%
+                );
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin: 0 auto 1.5rem;
+                font-size: 2.5rem;
+            }
+
+            .login-title {
+                font-size: 2rem;
+                font-weight: 700;
+                color: var(--text-dark);
+                margin-bottom: 0.5rem;
+            }
+
+            .login-subtitle {
+                color: var(--text-light);
+                font-size: 0.95rem;
+            }
+
+            .back-link {
+                text-align: center;
+                margin-top: 1.5rem;
+            }
+
+            .back-link a {
+                color: var(--primary);
+                text-decoration: none;
+                font-weight: 500;
+                display: inline-flex;
+                align-items: center;
+                gap: 0.5rem;
+                transition: all 0.3s ease;
+            }
+
+            .back-link a:hover {
+                color: var(--primary-dark);
+                gap: 0.75rem;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="login-container">
+            <div class="login-card">
+                <!-- Header -->
+                <div class="login-header">
+                    <div class="login-icon">🔐</div>
+                    <h1 class="login-title">Admin Login</h1>
+                    <p class="login-subtitle">เข้าสู่ระบบจัดการสต๊อกและราคา</p>
+                </div>
+
+                <!-- Alert -->
+                <div id="alertBox" class="hidden"></div>
+
+                <!-- Login Form -->
+                <form id="loginForm" onsubmit="handleLogin(event)">
+                    <div class="form-group">
+                        <label class="form-label"> 📧 อีเมล </label>
+                        <input
+                            type="email"
+                            id="email"
+                            class="form-input"
+                            placeholder="admin@example.com"
+                            required
+                            autocomplete="email"
+                        />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label"> 🔑 รหัสผ่าน </label>
+                        <input
+                            type="password"
+                            id="password"
+                            class="form-input"
+                            placeholder="••••••••"
+                            required
+                            autocomplete="current-password"
+                        />
+                    </div>
+
+                    <div class="form-group">
+                        <label
+                            style="
+                                display: flex;
+                                align-items: center;
+                                gap: 0.5rem;
+                                cursor: pointer;
+                            "
+                        >
+                            <input type="checkbox" id="rememberMe" />
+                            <span
+                                style="
+                                    font-size: 0.9rem;
+                                    color: var(--text-light);
+                                "
+                            >
+                                จดจำการเข้าสู่ระบบ
+                            </span>
+                        </label>
+                    </div>
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary btn-lg"
+                        style="width: 100%"
+                        id="loginBtn"
+                    >
+                        <span id="loginBtnText">เข้าสู่ระบบ</span>
+                        <span
+                            id="loginBtnLoading"
+                            class="hidden loading"
+                        ></span>
+                    </button>
+                </form>
+
+                <!-- Back to Home -->
+                <div class="back-link">
+                    <a href="index.html"> ← กลับสู่หน้าหลัก </a>
+                </div>
+
+                <!-- Demo Credentials (ลบออกในการใช้งานจริง) -->
+                <div
+                    style="
+                        margin-top: 2rem;
+                        padding: 1rem;
+                        background: var(--bg-light);
+                        border-radius: 8px;
+                        border-left: 4px solid var(--warning);
+                    "
+                >
+                    <p
+                        style="
+                            font-size: 0.875rem;
+                            color: var(--text-light);
+                            margin-bottom: 0.5rem;
+                        "
+                    >
+                        <strong>🔧 สำหรับทดสอบ:</strong>
+                    </p>
+                    <p
+                        style="
+                            font-size: 0.8rem;
+                            color: var(--text-light);
+                            font-family: monospace;
+                        "
+                    >
+                        Email: admin@hydraulic.com<br />
+                        Password: admin123
+                    </p>
+                    <p
+                        style="
+                            font-size: 0.75rem;
+                            color: var(--danger);
+                            margin-top: 0.5rem;
+                        "
+                    >
+                        ⚠️ ลบส่วนนี้ออกเมื่อใช้งานจริง
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scripts -->
+        <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+        <script src="js/firebase.js"></script>
+        <script src="js/auth.js"></script>
+        <script>
+            // Handle Login Form Submit
+            function handleLogin(event) {
+                event.preventDefault();
+
+                const email = document.getElementById("email").value;
+                const password = document.getElementById("password").value;
+                const rememberMe =
+                    document.getElementById("rememberMe").checked;
+
+                // Show loading
+                const btn = document.getElementById("loginBtn");
+                const btnText = document.getElementById("loginBtnText");
+                const btnLoading = document.getElementById("loginBtnLoading");
+
+                btn.disabled = true;
+                btnText.classList.add("hidden");
+                btnLoading.classList.remove("hidden");
+
+                // Simulate login (replace with actual Firebase auth)
+                setTimeout(() => {
+                    // For demo purposes - remove in production
+                    if (
+                        email === "admin@hydraulic.com" &&
+                        password === "admin123"
+                    ) {
+                        showAlert(
+                            "เข้าสู่ระบบสำเร็จ! กำลังเปลี่ยนหน้า...",
+                            "success",
+                        );
+
+                        // Save session
+                        if (rememberMe) {
+                            localStorage.setItem("isLoggedIn", "true");
+                            localStorage.setItem("userEmail", email);
+                        } else {
+                            sessionStorage.setItem("isLoggedIn", "true");
+                            sessionStorage.setItem("userEmail", email);
+                        }
+
+                        setTimeout(() => {
+                            window.location.href = "admin.html";
+                        }, 1000);
+                    } else {
+                        showAlert("อีเมลหรือรหัสผ่านไม่ถูกต้อง", "danger");
+                        btn.disabled = false;
+                        btnText.classList.remove("hidden");
+                        btnLoading.classList.add("hidden");
+                    }
+                }, 1500);
+            }
+
+            // Show Alert
+            function showAlert(message, type) {
+                const alertBox = document.getElementById("alertBox");
+                alertBox.className = `alert alert-${type}`;
+                alertBox.textContent = message;
+                alertBox.classList.remove("hidden");
+
+                setTimeout(() => {
+                    alertBox.classList.add("hidden");
+                }, 5000);
+            }
+
+            // Check if already logged in
+            window.onload = function () {
+                const isLoggedIn =
+                    localStorage.getItem("isLoggedIn") ||
+                    sessionStorage.getItem("isLoggedIn");
+                if (isLoggedIn === "true") {
+                    window.location.href = "admin.html";
+                }
+            };
+        </script>
+    </body>
+</html>

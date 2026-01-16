@@ -1,0 +1,50 @@
+type User @table {
+  username: String!
+  email: String!
+  role: String!
+  displayName: String
+  phoneNumber: String
+}
+
+type Component @table {
+  name: String!
+  partNumber: String!
+  quantity: Int!
+  unitOfMeasure: String!
+  description: String
+  manufacturer: String
+  supplier: String
+  price: Float
+  minStockLevel: Int
+  location: String
+}
+
+type Order @table {
+  orderDate: Timestamp!
+  status: String!
+  totalCost: Float!
+  supplierName: String
+  expectedDeliveryDate: Timestamp
+  notes: String
+  createdBy: User
+}
+
+type OrderLineItem @table(key: ["order", "component"]) {
+  quantityOrdered: Int!
+  unitPrice: Float!
+  notes: String
+  order: Order!
+  component: Component!
+}
+
+type Equipment @table {
+  name: String!
+  serialNumber: String!
+  location: String!
+  model: String
+  manufacturer: String
+  installationDate: Date
+  lastMaintenanceDate: Date
+  nextMaintenanceDate: Date
+  notes: String
+}

@@ -1,0 +1,936 @@
+<!doctype html>
+<html lang="th">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Admin Dashboard - สายไฮดรอลิค</title>
+        <link rel="stylesheet" href="css/styles.css" />
+        <style>
+            .admin-nav {
+                background: white;
+                border-bottom: 2px solid var(--border);
+                padding: 0;
+                margin-bottom: 2rem;
+            }
+
+            .admin-nav-content {
+                max-width: 1200px;
+                margin: 0 auto;
+                display: flex;
+                gap: 0;
+            }
+
+            .tab-btn {
+                padding: 1rem 2rem;
+                background: none;
+                border: none;
+                border-bottom: 3px solid transparent;
+                cursor: pointer;
+                font-size: 1rem;
+                font-weight: 500;
+                color: var(--text-light);
+                transition: all 0.3s ease;
+            }
+
+            .tab-btn:hover {
+                color: var(--primary);
+                background: var(--bg-light);
+            }
+
+            .tab-btn.active {
+                color: var(--primary);
+                border-bottom-color: var(--primary);
+                background: var(--bg-light);
+            }
+
+            .tab-content {
+                display: none;
+            }
+
+            .tab-content.active {
+                display: block;
+            }
+
+            .stats-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 1.5rem;
+                margin-bottom: 2rem;
+            }
+
+            .stat-card {
+                background: white;
+                padding: 1.5rem;
+                border-radius: 12px;
+                box-shadow: var(--shadow);
+                border-left: 4px solid var(--primary);
+            }
+
+            .stat-card.success {
+                border-left-color: var(--success);
+            }
+
+            .stat-card.warning {
+                border-left-color: var(--warning);
+            }
+
+            .stat-card.danger {
+                border-left-color: var(--danger);
+            }
+
+            .stat-value {
+                font-size: 2rem;
+                font-weight: 700;
+                color: var(--text-dark);
+                margin: 0.5rem 0;
+            }
+
+            .stat-label {
+                color: var(--text-light);
+                font-size: 0.9rem;
+            }
+
+            .modal {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 1000;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .modal.active {
+                display: flex;
+            }
+
+            .modal-content {
+                background: white;
+                padding: 2rem;
+                border-radius: 12px;
+                max-width: 600px;
+                width: 90%;
+                max-height: 90vh;
+                overflow-y: auto;
+            }
+
+            .modal-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 1.5rem;
+                padding-bottom: 1rem;
+                border-bottom: 2px solid var(--border);
+            }
+
+            .modal-close {
+                background: none;
+                border: none;
+                font-size: 1.5rem;
+                cursor: pointer;
+                color: var(--text-light);
+                padding: 0;
+                width: 32px;
+                height: 32px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 50%;
+                transition: all 0.3s ease;
+            }
+
+            .modal-close:hover {
+                background: var(--bg-light);
+                color: var(--danger);
+            }
+
+            .action-buttons {
+                display: flex;
+                gap: 0.5rem;
+            }
+        </style>
+    </head>
+    <body>
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1>
+                    <span>⚙️</span>
+                    Admin Dashboard
+                </h1>
+                <div class="header-actions">
+                    <span style="margin-right: 1rem; opacity: 0.9">
+                        👤 <span id="adminEmail">admin@example.com</span>
+                    </span>
+                    <button
+                        class="btn btn-danger btn-sm"
+                        onclick="handleLogout()"
+                    >
+                        🚪 ออกจากระบบ
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <nav class="admin-nav">
+            <div class="admin-nav-content">
+                <button class="tab-btn active" onclick="switchTab('dashboard')">
+                    📊 Dashboard
+                </button>
+                <button class="tab-btn" onclick="switchTab('hoses')">
+                    📏 จัดการสาย
+                </button>
+                <button class="tab-btn" onclick="switchTab('fittings')">
+                    🔩 จัดการหัวสาย
+                </button>
+                <button class="tab-btn" onclick="switchTab('orders')">
+                    📋 รายการขาย
+                </button>
+            </div>
+        </nav>
+
+        <div class="container">
+            <!-- Tab 1: Dashboard -->
+            <div id="dashboard" class="tab-content active">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">📏 ชนิดสายทั้งหมด</div>
+                        <div class="stat-value" id="totalHoseTypes">0</div>
+                    </div>
+                    <div class="stat-card success">
+                        <div class="stat-label">🔩 ชนิดหัวทั้งหมด</div>
+                        <div class="stat-value" id="totalFittingTypes">0</div>
+                    </div>
+                    <div class="stat-card warning">
+                        <div class="stat-label">💰 ยอดขายวันนี้</div>
+                        <div class="stat-value" id="todaySales">0 ฿</div>
+                    </div>
+                    <div class="stat-card danger">
+                        <div class="stat-label">📦 สินค้าใกล้หมด</div>
+                        <div class="stat-value" id="lowStock">0</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">📈 สรุปรายการล่าสุด</h2>
+                    </div>
+                    <div class="alert alert-success">
+                        <span>✅</span>
+                        <span
+                            >ระบบพร้อมใช้งาน -
+                            สามารถเริ่มจัดการสต๊อกและราคาได้</span
+                        >
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 2: จัดการสาย -->
+            <div id="hoses" class="tab-content">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">📏 จัดการสายไฮดรอลิค</h2>
+                        <button
+                            class="btn btn-primary"
+                            onclick="openAddHoseModal()"
+                        >
+                            ➕ เพิ่มสายใหม่
+                        </button>
+                    </div>
+
+                    <div class="table-container">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>ชื่อสาย</th>
+                                    <th>ขนาด</th>
+                                    <th>ราคา/เมตร</th>
+                                    <th>จำนวนคงเหลือ</th>
+                                    <th>สถานะ</th>
+                                    <th style="text-align: center">
+                                        การจัดการ
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody id="hoseTableBody">
+                                <!-- Sample Data -->
+                                <tr>
+                                    <td>สายไฮดรอลิคมาตรฐาน</td>
+                                    <td>1/4"</td>
+                                    <td>45.00 ฿</td>
+                                    <td>150 ม.</td>
+                                    <td>
+                                        <span class="badge badge-success"
+                                            >พร้อมจำหน่าย</span
+                                        >
+                                    </td>
+                                    <td style="text-align: center">
+                                        <div class="action-buttons">
+                                            <button
+                                                class="btn btn-sm btn-primary"
+                                                onclick="editHose(1)"
+                                            >
+                                                ✏️
+                                            </button>
+                                            <button
+                                                class="btn btn-sm btn-danger"
+                                                onclick="deleteHose(1)"
+                                            >
+                                                🗑️
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>สายไฮดรอลิคแรงดันสูง</td>
+                                    <td>3/8"</td>
+                                    <td>65.00 ฿</td>
+                                    <td>15 ม.</td>
+                                    <td>
+                                        <span class="badge badge-warning"
+                                            >ใกล้หมด</span
+                                        >
+                                    </td>
+                                    <td style="text-align: center">
+                                        <div class="action-buttons">
+                                            <button
+                                                class="btn btn-sm btn-primary"
+                                                onclick="editHose(2)"
+                                            >
+                                                ✏️
+                                            </button>
+                                            <button
+                                                class="btn btn-sm btn-danger"
+                                                onclick="deleteHose(2)"
+                                            >
+                                                🗑️
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 3: จัดการหัวสาย -->
+            <div id="fittings" class="tab-content">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">🔩 จัดการหัวสายไฮดรอลิค</h2>
+                        <button
+                            class="btn btn-success"
+                            onclick="openAddFittingModal()"
+                        >
+                            ➕ เพิ่มหัวใหม่
+                        </button>
+                    </div>
+
+                    <div class="table-container">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>ชื่อหัว</th>
+                                    <th>ประเภท</th>
+                                    <th>ขนาด</th>
+                                    <th>ราคา/ชิ้น</th>
+                                    <th>จำนวนคงเหลือ</th>
+                                    <th>สถานะ</th>
+                                    <th style="text-align: center">
+                                        การจัดการ
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody id="fittingTableBody">
+                                <!-- Sample Data -->
+                                <tr>
+                                    <td>หัวสายตรง</td>
+                                    <td>JIC</td>
+                                    <td>1/4"</td>
+                                    <td>25.00 ฿</td>
+                                    <td>200 ชิ้น</td>
+                                    <td>
+                                        <span class="badge badge-success"
+                                            >พร้อมจำหน่าย</span
+                                        >
+                                    </td>
+                                    <td style="text-align: center">
+                                        <div class="action-buttons">
+                                            <button
+                                                class="btn btn-sm btn-primary"
+                                                onclick="editFitting(1)"
+                                            >
+                                                ✏️
+                                            </button>
+                                            <button
+                                                class="btn btn-sm btn-danger"
+                                                onclick="deleteFitting(1)"
+                                            >
+                                                🗑️
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>หัวสายงอ 90°</td>
+                                    <td>ORFS</td>
+                                    <td>3/8"</td>
+                                    <td>35.00 ฿</td>
+                                    <td>8 ชิ้น</td>
+                                    <td>
+                                        <span class="badge badge-danger"
+                                            >หมด</span
+                                        >
+                                    </td>
+                                    <td style="text-align: center">
+                                        <div class="action-buttons">
+                                            <button
+                                                class="btn btn-sm btn-primary"
+                                                onclick="editFitting(2)"
+                                            >
+                                                ✏️
+                                            </button>
+                                            <button
+                                                class="btn btn-sm btn-danger"
+                                                onclick="deleteFitting(2)"
+                                            >
+                                                🗑️
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 4: รายการขาย -->
+            <div id="orders" class="tab-content">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">📋 ประวัติรายการขาย</h2>
+                        <div style="display: flex; gap: 0.5rem">
+                            <button class="btn btn-secondary btn-sm">
+                                📅 กรองตามวันที่
+                            </button>
+                            <button class="btn btn-success btn-sm">
+                                📊 Export Excel
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="table-container">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>เลขที่ใบเสร็จ</th>
+                                    <th>วันที่</th>
+                                    <th>รายการ</th>
+                                    <th>ยอดรวม</th>
+                                    <th style="text-align: center">
+                                        การจัดการ
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody id="orderTableBody">
+                                <!-- Sample Data -->
+                                <tr>
+                                    <td><strong>#00001</strong></td>
+                                    <td>25/12/2025 14:30</td>
+                                    <td>สาย 5 ม. + หัว 4 ชิ้น</td>
+                                    <td><strong>325.00 ฿</strong></td>
+                                    <td style="text-align: center">
+                                        <button
+                                            class="btn btn-sm btn-primary"
+                                            onclick="viewOrder(1)"
+                                        >
+                                            👁️ ดู
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>#00002</strong></td>
+                                    <td>25/12/2025 15:15</td>
+                                    <td>สาย 10 ม. + หัว 8 ชิ้น</td>
+                                    <td><strong>730.00 ฿</strong></td>
+                                    <td style="text-align: center">
+                                        <button
+                                            class="btn btn-sm btn-primary"
+                                            onclick="viewOrder(2)"
+                                        >
+                                            👁️ ดู
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal: Add/Edit Hose -->
+        <div id="hoseModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="hoseModalTitle">เพิ่มสายไฮดรอลิคใหม่</h2>
+                    <button class="modal-close" onclick="closeHoseModal()">
+                        ✕
+                    </button>
+                </div>
+
+                <form id="hoseForm" onsubmit="saveHose(event)">
+                    <div class="form-group">
+                        <label class="form-label">ชื่อสาย</label>
+                        <input
+                            type="text"
+                            id="hoseName"
+                            class="form-input"
+                            required
+                        />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">ขนาด</label>
+                        <input
+                            type="text"
+                            id="hoseSize"
+                            class="form-input"
+                            placeholder='เช่น 1/4", 3/8"'
+                            required
+                        />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">ราคาต่อเมตร (฿)</label>
+                        <input
+                            type="number"
+                            id="hosePrice"
+                            class="form-input"
+                            step="0.01"
+                            min="0"
+                            required
+                        />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">จำนวนคงเหลือ (เมตร)</label>
+                        <input
+                            type="number"
+                            id="hoseStock"
+                            class="form-input"
+                            min="0"
+                            required
+                        />
+                    </div>
+
+                    <div style="display: flex; gap: 1rem; margin-top: 2rem">
+                        <button
+                            type="button"
+                            class="btn btn-secondary"
+                            style="flex: 1"
+                            onclick="closeHoseModal()"
+                        >
+                            ยกเลิก
+                        </button>
+                        <button
+                            type="submit"
+                            class="btn btn-primary"
+                            style="flex: 1"
+                        >
+                            บันทึก
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Modal: Add/Edit Fitting -->
+        <div id="fittingModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="fittingModalTitle">เพิ่มหัวสายใหม่</h2>
+                    <button class="modal-close" onclick="closeFittingModal()">
+                        ✕
+                    </button>
+                </div>
+
+                <form id="fittingForm" onsubmit="saveFitting(event)">
+                    <div class="form-group">
+                        <label class="form-label">ชื่อหัว</label>
+                        <input
+                            type="text"
+                            id="fittingName"
+                            class="form-input"
+                            required
+                        />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">ประเภท</label>
+                        <input
+                            type="text"
+                            id="fittingType"
+                            class="form-input"
+                            placeholder="เช่น JIC, ORFS, NPT"
+                            required
+                        />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">ขนาด</label>
+                        <input
+                            type="text"
+                            id="fittingSizeInput"
+                            class="form-input"
+                            placeholder='เช่น 1/4", 3/8"'
+                            required
+                        />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">ราคาต่อชิ้น (฿)</label>
+                        <input
+                            type="number"
+                            id="fittingPrice"
+                            class="form-input"
+                            step="0.01"
+                            min="0"
+                            required
+                        />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">จำนวนคงเหลือ (ชิ้น)</label>
+                        <input
+                            type="number"
+                            id="fittingStock"
+                            class="form-input"
+                            min="0"
+                            required
+                        />
+                    </div>
+
+                    <div style="display: flex; gap: 1rem; margin-top: 2rem">
+                        <button
+                            type="button"
+                            class="btn btn-secondary"
+                            style="flex: 1"
+                            onclick="closeFittingModal()"
+                        >
+                            ยกเลิก
+                        </button>
+                        <button
+                            type="submit"
+                            class="btn btn-success"
+                            style="flex: 1"
+                        >
+                            บันทึก
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- ========================================
+         SCRIPTS - ต้องเรียงตามลำดับนี้
+    ======================================== -->
+
+        <!-- 1. Firebase SDK -->
+        <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+        <!-- 2. Your Scripts -->
+        <script src="js/firebase.js"></script>
+        <script src="js/auth.js"></script>
+        <script src="js/inventory.js"></script>
+
+        <script>
+            // ========================================
+            // Check Auth & Initialize
+            // ========================================
+            window.onload = function () {
+                const isLoggedIn =
+                    localStorage.getItem("isLoggedIn") ||
+                    sessionStorage.getItem("isLoggedIn");
+                const userEmail =
+                    localStorage.getItem("userEmail") ||
+                    sessionStorage.getItem("userEmail");
+
+                if (isLoggedIn !== "true") {
+                    window.location.href = "login.html";
+                    return;
+                }
+
+                document.getElementById("adminEmail").textContent =
+                    userEmail || "admin";
+
+                // Load data
+                loadHoses();
+                loadFittings();
+                loadOrders();
+            };
+
+            // ========================================
+            // Tab Switching
+            // ========================================
+            function switchTab(tabName) {
+                // Hide all tabs
+                document.querySelectorAll(".tab-content").forEach((tab) => {
+                    tab.classList.remove("active");
+                });
+
+                // Remove active from all buttons
+                document.querySelectorAll(".tab-btn").forEach((btn) => {
+                    btn.classList.remove("active");
+                });
+
+                // Show selected tab
+                document.getElementById(tabName).classList.add("active");
+
+                // Add active to clicked button
+                event.target.classList.add("active");
+            }
+
+            // Logout
+            function handleLogout() {
+                if (confirm("คุณต้องการออกจากระบบหรือไม่?")) {
+                    localStorage.removeItem("isLoggedIn");
+                    localStorage.removeItem("userEmail");
+                    sessionStorage.removeItem("isLoggedIn");
+                    sessionStorage.removeItem("userEmail");
+                    window.location.href = "login.html";
+                }
+            }
+
+            // ========================================
+            // HOSE MODAL FUNCTIONS (ที่ใช้งานได้จริง)
+            // ========================================
+
+            let currentEditingHoseId = null;
+
+            function openAddHoseModal() {
+                currentEditingHoseId = null;
+                document.getElementById("hoseModalTitle").textContent =
+                    "เพิ่มสายไฮดรอลิคใหม่";
+                document.getElementById("hoseForm").reset();
+                document.getElementById("hoseModal").classList.add("active");
+            }
+
+            function closeHoseModal() {
+                document.getElementById("hoseModal").classList.remove("active");
+                currentEditingHoseId = null;
+            }
+
+            async function saveHose(event) {
+                event.preventDefault();
+
+                const data = {
+                    name: document.getElementById("hoseName").value,
+                    size: document.getElementById("hoseSize").value,
+                    pricePerMeter: document.getElementById("hosePrice").value,
+                    stock: document.getElementById("hoseStock").value,
+                    category: "standard",
+                    description: "",
+                };
+
+                try {
+                    let result;
+                    if (currentEditingHoseId) {
+                        // Update existing
+                        result = await updateHoseData(
+                            currentEditingHoseId,
+                            data,
+                        );
+                    } else {
+                        // Add new
+                        result = await addHose(data);
+                    }
+
+                    if (result.success) {
+                        closeHoseModal();
+                        await loadHoses(); // Reload table
+                    }
+                } catch (error) {
+                    console.error("Error saving hose:", error);
+                    showNotification("เกิดข้อผิดพลาดในการบันทึก", "danger");
+                }
+            }
+
+            async function editHose(id) {
+                currentEditingHoseId = id;
+                document.getElementById("hoseModalTitle").textContent =
+                    "แก้ไขข้อมูลสาย";
+
+                // Find hose data from hosesData array
+                const hose = hosesData.find((h) => h.id === id);
+                if (!hose) {
+                    showNotification("ไม่พบข้อมูลสาย", "danger");
+                    return;
+                }
+
+                // Fill form
+                document.getElementById("hoseName").value = hose.name;
+                document.getElementById("hoseSize").value = hose.size;
+                document.getElementById("hosePrice").value = hose.pricePerMeter;
+                document.getElementById("hoseStock").value = hose.stock;
+
+                // Show modal
+                document.getElementById("hoseModal").classList.add("active");
+            }
+
+            async function deleteHose(id) {
+                if (!confirm("คุณต้องการลบสายนี้หรือไม่?")) {
+                    return;
+                }
+
+                try {
+                    const result = await deleteHoseData(id);
+                    if (result.success) {
+                        await loadHoses(); // Reload table
+                    }
+                } catch (error) {
+                    console.error("Error deleting hose:", error);
+                    showNotification("เกิดข้อผิดพลาดในการลบ", "danger");
+                }
+            }
+
+            // ========================================
+            // FITTING MODAL FUNCTIONS (ที่ใช้งานได้จริง)
+            // ========================================
+
+            let currentEditingFittingId = null;
+
+            function openAddFittingModal() {
+                currentEditingFittingId = null;
+                document.getElementById("fittingModalTitle").textContent =
+                    "เพิ่มหัวสายใหม่";
+                document.getElementById("fittingForm").reset();
+                document.getElementById("fittingModal").classList.add("active");
+            }
+
+            function closeFittingModal() {
+                document
+                    .getElementById("fittingModal")
+                    .classList.remove("active");
+                currentEditingFittingId = null;
+            }
+
+            async function saveFitting(event) {
+                event.preventDefault();
+
+                const data = {
+                    name: document.getElementById("fittingName").value,
+                    type: document.getElementById("fittingType").value,
+                    size: document.getElementById("fittingSizeInput").value,
+                    pricePerUnit: document.getElementById("fittingPrice").value,
+                    stock: document.getElementById("fittingStock").value,
+                    description: "",
+                };
+
+                try {
+                    let result;
+                    if (currentEditingFittingId) {
+                        // Update existing
+                        result = await updateFittingData(
+                            currentEditingFittingId,
+                            data,
+                        );
+                    } else {
+                        // Add new
+                        result = await addFittingData(data);
+                    }
+
+                    if (result.success) {
+                        closeFittingModal();
+                        await loadFittings(); // Reload table
+                    }
+                } catch (error) {
+                    console.error("Error saving fitting:", error);
+                    showNotification("เกิดข้อผิดพลาดในการบันทึก", "danger");
+                }
+            }
+
+            async function editFitting(id) {
+                currentEditingFittingId = id;
+                document.getElementById("fittingModalTitle").textContent =
+                    "แก้ไขข้อมูลหัวสาย";
+
+                // Find fitting data from fittingsData array
+                const fitting = fittingsData.find((f) => f.id === id);
+                if (!fitting) {
+                    showNotification("ไม่พบข้อมูลหัวสาย", "danger");
+                    return;
+                }
+
+                // Fill form
+                document.getElementById("fittingName").value = fitting.name;
+                document.getElementById("fittingType").value = fitting.type;
+                document.getElementById("fittingSizeInput").value =
+                    fitting.size;
+                document.getElementById("fittingPrice").value =
+                    fitting.pricePerUnit;
+                document.getElementById("fittingStock").value = fitting.stock;
+
+                // Show modal
+                document.getElementById("fittingModal").classList.add("active");
+            }
+
+            async function deleteFitting(id) {
+                if (!confirm("คุณต้องการลบหัวสายนี้หรือไม่?")) {
+                    return;
+                }
+
+                try {
+                    const result = await deleteFittingData(id);
+                    if (result.success) {
+                        await loadFittings(); // Reload table
+                    }
+                } catch (error) {
+                    console.error("Error deleting fitting:", error);
+                    showNotification("เกิดข้อผิดพลาดในการลบ", "danger");
+                }
+            }
+
+            // ========================================
+            // ORDER FUNCTIONS
+            // ========================================
+
+            function viewOrder(id) {
+                // Already implemented in receipt.js
+                if (typeof window.viewOrder === "function") {
+                    window.viewOrder(id);
+                } else {
+                    alert("แสดงรายละเอียดคำสั่งซื้อ #" + id);
+                }
+            }
+
+            // Close modal on outside click
+            window.onclick = function (event) {
+                if (event.target.classList.contains("modal")) {
+                    event.target.classList.remove("active");
+                }
+            };
+
+            // Export functions to window
+            window.openAddHoseModal = openAddHoseModal;
+            window.closeHoseModal = closeHoseModal;
+            window.saveHose = saveHose;
+            window.editHose = editHose;
+            window.deleteHose = deleteHose;
+            window.openAddFittingModal = openAddFittingModal;
+            window.closeFittingModal = closeFittingModal;
+            window.saveFitting = saveFitting;
+            window.editFitting = editFitting;
+            window.deleteFitting = deleteFitting;
+            window.viewOrder = viewOrder;
+        </script>
+    </body>
+</html>

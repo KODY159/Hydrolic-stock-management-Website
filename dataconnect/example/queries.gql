@@ -1,0 +1,24 @@
+mutation CreateComponent($name: String!, $partNumber: String!, $quantity: Int!, $unitOfMeasure: String!) @auth(level: USER) {
+  component_insert(data: {name: $name, partNumber: $partNumber, quantity: $quantity, unitOfMeasure: $unitOfMeasure})
+}
+
+query ListEquipments @auth(level: PUBLIC, insecureReason: "This operation is safe to expose to the public") {
+  equipments {
+    id
+    name
+    location
+  }
+}
+
+mutation UpdateOrderNotes($id: UUID!, $notes: String) @auth(level: USER, insecureReason: "This operation is safe to expose to all logged in users.") {
+  order_update(key: {id: $id}, data: {notes: $notes})
+}
+
+query GetUserByEmail($email: String!) @auth(level: USER_EMAIL_VERIFIED) {
+  users(where: {email: {eq: $email}}) {
+    id
+    username
+    email
+    displayName
+  }
+}
