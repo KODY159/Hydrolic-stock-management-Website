@@ -33,6 +33,46 @@ async function loadHoses() {
 }
 
 // Display hoses in table
+// function displayHosesTable() {
+//   const tbody = document.getElementById("hoseTableBody");
+//   if (!tbody) return;
+
+//   if (hosesData.length === 0) {
+//     tbody.innerHTML = `
+//       <tr>
+//         <td colspan="6" class="text-center" style="padding: 2rem; color: var(--text-light);">
+//           ยังไม่มีข้อมูลสาย กรุณาเพิ่มสายใหม่
+//         </td>
+//       </tr>
+//     `;
+//     return;
+//   }
+
+//   tbody.innerHTML = hosesData
+//     .map((hose) => {
+//       const stockStatus = getStockStatus(hose.stock, "hose");
+//       return `
+//       <tr>
+//         <td><strong>${hose.name}</strong></td>
+//         <td>${hose.size}</td>
+//         <td>${formatCurrency(hose.pricePerMeter)}</td>
+//         <td>${hose.stock} ม.</td>
+//         <td><span class="badge badge-${stockStatus.class}">${stockStatus.label}</span></td>
+//         <td style="text-align: center;">
+//           <div class="action-buttons">
+//             <button class="btn btn-sm btn-primary" onclick="editHose('${hose.id}')">
+//               ✏️
+//             </button>
+//             <button class="btn btn-sm btn-danger" onclick="deleteHose('${hose.id}')">
+//               🗑️
+//             </button>
+//           </div>
+//         </td>
+//       </tr>
+//     `;
+//     })
+//     .join("");
+// }
 function displayHosesTable() {
   const tbody = document.getElementById("hoseTableBody");
   if (!tbody) return;
@@ -48,7 +88,26 @@ function displayHosesTable() {
     return;
   }
 
-  tbody.innerHTML = hosesData
+  // Group by name
+  const grouped = {};
+  hosesData.forEach((hose) => {
+    if (!grouped[hose.name]) grouped[hose.name] = [];
+    grouped[hose.name].push(hose);
+  });
+
+  // Sort within each group by size (simple alphanumeric)
+  Object.keys(grouped).forEach((name) => {
+    grouped[name].sort((a, b) =>
+      a.size.localeCompare(b.size, undefined, { numeric: true }),
+    );
+  });
+
+  // Flatten grouped array for display
+  const sortedHoses = Object.keys(grouped)
+    .sort() // sort group names alphabetically
+    .flatMap((name) => grouped[name]);
+
+  tbody.innerHTML = sortedHoses
     .map((hose) => {
       const stockStatus = getStockStatus(hose.stock, "hose");
       return `
@@ -60,16 +119,12 @@ function displayHosesTable() {
         <td><span class="badge badge-${stockStatus.class}">${stockStatus.label}</span></td>
         <td style="text-align: center;">
           <div class="action-buttons">
-            <button class="btn btn-sm btn-primary" onclick="editHose('${hose.id}')">
-              ✏️
-            </button>
-            <button class="btn btn-sm btn-danger" onclick="deleteHose('${hose.id}')">
-              🗑️
-            </button>
+            <button class="btn btn-sm btn-primary" onclick="editHose('${hose.id}')">✏️</button>
+            <button class="btn btn-sm btn-danger" onclick="deleteHoseData('${hose.id}')">🗑️</button>
           </div>
         </td>
       </tr>
-    `;
+      `;
     })
     .join("");
 }
@@ -164,6 +219,47 @@ async function loadFittings() {
 }
 
 // Display fittings in table
+// function displayFittingsTable() {
+//   const tbody = document.getElementById("fittingTableBody");
+//   if (!tbody) return;
+
+//   if (fittingsData.length === 0) {
+//     tbody.innerHTML = `
+//       <tr>
+//         <td colspan="7" class="text-center" style="padding: 2rem; color: var(--text-light);">
+//           ยังไม่มีข้อมูลหัวสาย กรุณาเพิ่มหัวสายใหม่
+//         </td>
+//       </tr>
+//     `;
+//     return;
+//   }
+
+//   tbody.innerHTML = fittingsData
+//     .map((fitting) => {
+//       const stockStatus = getStockStatus(fitting.stock, "fitting");
+//       return `
+//       <tr>
+//         <td><strong>${fitting.name}</strong></td>
+//         <td>${fitting.type}</td>
+//         <td>${fitting.size}</td>
+//         <td>${formatCurrency(fitting.pricePerUnit)}</td>
+//         <td>${fitting.stock} ชิ้น</td>
+//         <td><span class="badge badge-${stockStatus.class}">${stockStatus.label}</span></td>
+//         <td style="text-align: center;">
+//           <div class="action-buttons">
+//             <button class="btn btn-sm btn-primary" onclick="editFitting('${fitting.id}')">
+//               ✏️
+//             </button>
+//             <button class="btn btn-sm btn-danger" onclick="deleteFitting('${fitting.id}')">
+//               🗑️
+//             </button>
+//           </div>
+//         </td>
+//       </tr>
+//     `;
+//     })
+//     .join("");
+// }
 function displayFittingsTable() {
   const tbody = document.getElementById("fittingTableBody");
   if (!tbody) return;
@@ -179,7 +275,26 @@ function displayFittingsTable() {
     return;
   }
 
-  tbody.innerHTML = fittingsData
+  // Group by name
+  const grouped = {};
+  fittingsData.forEach((fitting) => {
+    if (!grouped[fitting.name]) grouped[fitting.name] = [];
+    grouped[fitting.name].push(fitting);
+  });
+
+  // Sort within each group by size
+  Object.keys(grouped).forEach((name) => {
+    grouped[name].sort((a, b) =>
+      a.size.localeCompare(b.size, undefined, { numeric: true }),
+    );
+  });
+
+  // Flatten grouped array
+  const sortedFittings = Object.keys(grouped)
+    .sort() // sort group names alphabetically
+    .flatMap((name) => grouped[name]);
+
+  tbody.innerHTML = sortedFittings
     .map((fitting) => {
       const stockStatus = getStockStatus(fitting.stock, "fitting");
       return `
@@ -192,16 +307,12 @@ function displayFittingsTable() {
         <td><span class="badge badge-${stockStatus.class}">${stockStatus.label}</span></td>
         <td style="text-align: center;">
           <div class="action-buttons">
-            <button class="btn btn-sm btn-primary" onclick="editFitting('${fitting.id}')">
-              ✏️
-            </button>
-            <button class="btn btn-sm btn-danger" onclick="deleteFitting('${fitting.id}')">
-              🗑️
-            </button>
+            <button class="btn btn-sm btn-primary" onclick="editFitting('${fitting.id}')">✏️</button>
+            <button class="btn btn-sm btn-danger" onclick="deleteFittingData('${fitting.id}')">🗑️</button>
           </div>
         </td>
       </tr>
-    `;
+      `;
     })
     .join("");
 }
